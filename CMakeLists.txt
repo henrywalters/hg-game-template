@@ -3,20 +3,24 @@ project(HGameTemplate)
 
 set(CMAKE_REQUIRED_LIBRARIES "-L${atomic_lib_dir}" "-latomic")
 
+find_package(PkgConfig REQUIRED)
+
 # set(CMAKE_TOOLCHAIN_FILE /home/henry/emsdk/)
 if(EMSCRIPTEN)
     MESSAGE("BUILDING FOR THE WEB")
     set(CMAKE_EXECUTABLE_SUFFIX ".html")
+    # set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "public/")
+else()
+    find_package(X11 REQUIRED)
+    find_package(ALSA REQUIRED)
+
+    if(NOT X11_FOUND)
+        message("ERROR: x11 not found")
+    endif(NOT X11_FOUND)
 endif()
 
-find_package(PkgConfig REQUIRED)
-find_package(X11 REQUIRED)
 find_package(OpenGL REQUIRED)
-find_package(ALSA REQUIRED)
 
-if(NOT X11_FOUND)
-    message("ERROR: x11 not found")
-endif(NOT X11_FOUND)
 pkg_search_module(GLFW REQUIRED glfw3)
 # pkg_search_module(GL REQUIRED gl)
 
@@ -65,5 +69,5 @@ target_link_libraries(HGameTemplate ${ALSA_LIBRARIES})
 
 # set(CMAKE_TOOLCHAIN_FILE /home/henry/emsdk/)
 if(EMSCRIPTEN)
-    set_target_properties(HGameTemplate PROPERTIES LINK_FLAGS "-DCMAKE_EXE_LINKER_FLAGS=-s -sMAX_WEBGL_VERSION=2 --preload-file ../assets")
+    set_target_properties(HGameTemplate PROPERTIES LINK_FLAGS "-DCMAKE_EXE_LINKER_FLAGS=-s -sMAX_WEBGL_VERSION=2 -sUSE_GLFW=3 -sTOTAL_MEMORY=512MB --preload-file ./../assets")
 endif()

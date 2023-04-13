@@ -9,6 +9,6 @@
 #define GAME_SIZE hg::graphics::SD
 
 #define HEADLESS 0 // If true, no window will be opened
-#define USE_IMGUI 1 // If true, IMGUI will be enabled and taken care of in game.cpp
+#define USE_IMGUI 0 // If true, IMGUI will be enabled and taken care of in game.cpp
 
 #endif //HGAMETEMPLATE_CONSTANTS_H

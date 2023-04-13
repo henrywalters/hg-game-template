@@ -1,2 +1,8 @@
 .idea/
 cmake-build-debug/
+CMakeCache.txt
+CMakeFiles/
+HGameTemplate
+Makefile
+cmake_install.cmake
+libimgui.a

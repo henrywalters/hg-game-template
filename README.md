@@ -18,6 +18,12 @@ set(
 )
 ```
 
+If you'd like to run the test server, run:
+
+```bash
+cd public && npm install && cd ..
+```
+
 ## Building
 
 To build for desktop, it is sufficient to run:
@@ -33,4 +39,9 @@ To build for web:
 cd public
 emcmake cmake .
 make
+```
+
+To run the test server:
+```bash
+cd public && node server.js && cd ..
 ```

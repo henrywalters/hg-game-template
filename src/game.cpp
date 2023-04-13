@@ -68,5 +68,7 @@ void Game::onDestroy() {
 
 void Game::onUpdate(double dt) {
     // FILL ME IN!
-    std::cout << "Game::onUpdate dt = " << dt << "\n";
+    ImGui::Begin("Demo Window");
+    ImGui::Text(("DT: " + std::to_string(dt)).c_str());
+    ImGui::End();
 }

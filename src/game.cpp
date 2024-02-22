@@ -16,7 +16,7 @@ using namespace hg::graphics;
 
 void Game::onInit() {
 #if !HEADLESS
-    m_window = Windows::Create("The Monster's Hand", m_size);
+    m_window = Windows::Create(GAME_NAME, GAME_SIZE);
 
     Windows::Events.subscribe(WindowEvents::Close, [&](Window* window) {
         running(false);
@@ -68,7 +68,9 @@ void Game::onDestroy() {
 
 void Game::onUpdate(double dt) {
     // FILL ME IN!
+#if USE_IMGUI
     ImGui::Begin("Demo Window");
     ImGui::Text(("DT: " + std::to_string(dt)).c_str());
     ImGui::End();
+#endif
 }

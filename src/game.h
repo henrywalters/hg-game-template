@@ -6,6 +6,7 @@
 #define HGAMETEMPLATE_GAME_H
 
 #include <hagame/core/game.h>
+#include <hagame/common/console.h>
 #include "constants.h"
 
 class Game : public hg::Game {
@@ -38,6 +39,8 @@ private:
     hg::graphics::Window* m_window;
     hg::Vec2i m_size;
 #endif
+
+    std::unique_ptr<hg::Console> m_console;
 
 };
 

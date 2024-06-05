@@ -4,6 +4,11 @@
 #include "game.h"
 
 #include <hagame/graphics/windows.h>
+#include <hagame/core/assets.h>
+#include <hagame/graphics/shaders/color.h>
+#include <hagame/graphics/shaders/texture.h>
+#include <hagame/graphics/shaders/text.h>
+#include <hagame/graphics/shaders/particle.h>
 
 #if USE_IMGUI
 #include "imgui.h"
@@ -13,6 +18,7 @@
 #endif
 
 using namespace hg::graphics;
+using namespace hg::input::devices;
 
 void Game::onInit() {
 #if !HEADLESS
@@ -24,6 +30,49 @@ void Game::onInit() {
 
     Windows::Events.subscribe(WindowEvents::Resize, [&](Window* window) {
 
+    });
+
+    hg::loadShader(COLOR_SHADER);
+    hg::loadShader(TEXTURE_SHADER);
+    hg::loadShader(TEXT_SHADER);
+    hg::loadShader(TEXT_BUFFER_SHADER);
+    hg::loadShader(PARTICLE_SHADER);
+
+    auto defaultFont = hg::loadFont("8bit", hg::ASSET_DIR + "fonts/8bit.ttf");
+    defaultFont->fontSize(16);
+
+    m_console = std::make_unique<hg::Console>(defaultFont.get(), m_window->size(), hg::Vec2i(m_window->size()[0], 26 * 10));
+
+    m_window->input.devices.keyboardMouse()->events.subscribe(KeyboardEvent::KeyPressed, [&](auto keyPress) {
+        if (keyPress.key == '`') {
+            m_console->toggle();
+        }
+
+        if (!m_console->isOpen()) {
+            return;
+        }
+
+        if (keyPress.key == GLFW_KEY_BACKSPACE) {
+            m_console->backspace();
+        }
+
+        if (keyPress.key == GLFW_KEY_ENTER) {
+            m_console->submit();
+        }
+
+        if (keyPress.key == GLFW_KEY_UP) {
+            m_console->prevHistory();
+        }
+
+        if (keyPress.key == GLFW_KEY_DOWN) {
+            m_console->nextHistory();
+        }
+    });
+
+    m_window->input.devices.keyboardMouse()->events.subscribe(KeyboardEvent::TextInput, [&](auto keyPress) {
+        if (m_console->status() == hg::Console::Status::Open) {
+            m_console->newChar(keyPress.key);
+        }
     });
 #endif
 
@@ -58,6 +107,7 @@ void Game::onAfterUpdate() {
 #endif
 
 #if !HEADLESS
+    m_console->render();
     m_window->render();
 #endif
 }
@@ -68,6 +118,11 @@ void Game::onDestroy() {
 
 void Game::onUpdate(double dt) {
     // FILL ME IN!
+#if !HEADLESS
+    m_console->scroll(m_window->input.devices.keyboardMouse()->axes[MouseAxes::WheelY]);
+    m_console->update(dt);
+#endif
+
 #if USE_IMGUI
     ImGui::Begin("Demo Window");
     ImGui::Text(("DT: " + std::to_string(dt)).c_str());

@@ -12,3 +12,5 @@ public/*.html
 public/*.wasm
 public/*.js
 public/node_modules/
+
+!public/server.js

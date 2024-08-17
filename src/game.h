@@ -6,8 +6,11 @@
 #define HGAMETEMPLATE_GAME_H
 
 #include <hagame/core/game.h>
-#include <hagame/common/console.h>
 #include "constants.h"
+
+#if USE_CONSOLE
+#include <hagame/common/console.h>
+#endif
 
 class Game : public hg::Game {
 public:
@@ -40,7 +43,9 @@ private:
     hg::Vec2i m_size;
 #endif
 
+#if USE_CONSOLE
     std::unique_ptr<hg::Console> m_console;
+#endif
 
 };
 

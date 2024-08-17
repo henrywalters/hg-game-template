@@ -5,10 +5,9 @@
 
 #include <hagame/graphics/windows.h>
 #include <hagame/core/assets.h>
-#include <hagame/graphics/shaders/color.h>
-#include <hagame/graphics/shaders/texture.h>
-#include <hagame/graphics/shaders/text.h>
-#include <hagame/graphics/shaders/particle.h>
+#include <hagame/common/scenes/loading.h>
+
+#include "scenes/mainMenu.h"
 
 #if USE_IMGUI
 #include "imgui.h"
@@ -32,48 +31,63 @@ void Game::onInit() {
 
     });
 
-    hg::loadShader(COLOR_SHADER);
-    hg::loadShader(TEXTURE_SHADER);
-    hg::loadShader(TEXT_SHADER);
-    hg::loadShader(TEXT_BUFFER_SHADER);
-    hg::loadShader(PARTICLE_SHADER);
-
     auto defaultFont = hg::loadFont("8bit", hg::ASSET_DIR + "fonts/8bit.ttf");
     defaultFont->fontSize(16);
+    auto lgFont = hg::loadFont("8bit_lg", hg::ASSET_DIR + "fonts/8bit.ttf");
+    lgFont->fontSize(24);
 
-    m_console = std::make_unique<hg::Console>(defaultFont.get(), m_window->size(), hg::Vec2i(m_window->size()[0], 26 * 10));
+    hg::Loading::Settings settings;
+    settings.font = SPLASH_FONT;
+    settings.logo = SPLASH_SCREEN;
+    settings.version = GAME_VERSION;
 
-    m_window->input.devices.keyboardMouse()->events.subscribe(KeyboardEvent::KeyPressed, [&](auto keyPress) {
-        if (keyPress.key == '`') {
-            m_console->toggle();
-        }
+    auto loading = static_cast<hg::Loading*>(scenes()->add<hg::Loading>("loading", m_window, settings));
 
-        if (!m_console->isOpen()) {
-            return;
-        }
+    loading->onFinish = [&]() {
 
-        if (keyPress.key == GLFW_KEY_BACKSPACE) {
-            m_console->backspace();
-        }
+#if USE_CONSOLE
 
-        if (keyPress.key == GLFW_KEY_ENTER) {
-            m_console->submit();
-        }
+        m_console = std::make_unique<hg::Console>(hg::getFont("8bit"), m_window->size(), hg::Vec2i(m_window->size()[0], 26 * 10));
 
-        if (keyPress.key == GLFW_KEY_UP) {
-            m_console->prevHistory();
-        }
+        m_window->input.devices.keyboardMouse()->events.subscribe(KeyboardEvent::KeyPressed, [&](auto keyPress) {
+            if (keyPress.key == '`') {
+                m_console->toggle();
+            }
 
-        if (keyPress.key == GLFW_KEY_DOWN) {
-            m_console->nextHistory();
-        }
-    });
+            if (!m_console->isOpen()) {
+                return;
+            }
 
-    m_window->input.devices.keyboardMouse()->events.subscribe(KeyboardEvent::TextInput, [&](auto keyPress) {
-        if (m_console->status() == hg::Console::Status::Open) {
-            m_console->newChar(keyPress.key);
-        }
-    });
+            if (keyPress.key == GLFW_KEY_BACKSPACE) {
+                m_console->backspace();
+            }
+
+            if (keyPress.key == GLFW_KEY_ENTER) {
+                m_console->submit();
+            }
+
+            if (keyPress.key == GLFW_KEY_UP) {
+                m_console->prevHistory();
+            }
+
+            if (keyPress.key == GLFW_KEY_DOWN) {
+                m_console->nextHistory();
+            }
+        });
+
+        m_window->input.devices.keyboardMouse()->events.subscribe(KeyboardEvent::TextInput, [&](auto keyPress) {
+            if (m_console->status() == hg::Console::Status::Open) {
+                m_console->newChar(keyPress.key);
+            }
+        });
+
+#endif
+
+        scenes()->add<MainMenu>("main_menu", m_window);
+        scenes()->activate("main_menu");
+    };
+
+    scenes()->activate("loading");
 #endif
 
 #if USE_IMGUI
@@ -107,7 +121,11 @@ void Game::onAfterUpdate() {
 #endif
 
 #if !HEADLESS
-    m_console->render();
+#if USE_CONSOLE
+    if (m_console) {
+        m_console->render();
+    }
+#endif
     m_window->render();
 #endif
 }
@@ -119,8 +137,12 @@ void Game::onDestroy() {
 void Game::onUpdate(double dt) {
     // FILL ME IN!
 #if !HEADLESS
-    m_console->scroll(m_window->input.devices.keyboardMouse()->axes[MouseAxes::WheelY]);
-    m_console->update(dt);
+#if USE_CONSOLE
+    if (m_console) {
+        m_console->scroll(m_window->input.devices.keyboardMouse()->axes[MouseAxes::WheelY]);
+        m_console->update(dt);
+    }
+#endif
 #endif
 
 #if USE_IMGUI

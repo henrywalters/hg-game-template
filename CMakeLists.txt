@@ -56,7 +56,7 @@ list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_LIST_DIR}/cmake")
 MESSAGE("${CMAKE_CURRENT_LIST_DIR}")
 find_package(HaGame2 REQUIRED)
 
-add_executable(HGameTemplate main.cpp src/constants.h src/game.h src/game.cpp)
+add_executable(HGameTemplate main.cpp src/constants.h src/game.h src/game.cpp src/scenes/mainMenu.h src/scenes/mainMenu.cpp src/common/actionMap.h src/common/gameState.cpp src/common/persistentSettings.cpp src/common/ui.cpp)
 target_include_directories(HGameTemplate PUBLIC ${HAGAME2_INCLUDE_DIR})
 target_include_directories(HGameTemplate PUBLIC ${FIND_HAGAME2_PATHS}/thirdparty/asio/asio/include/)
 target_link_libraries(HGameTemplate ${HAGAME2_LIBRARY})

@@ -6,6 +6,7 @@
 #include <hagame/graphics/windows.h>
 #include <hagame/core/assets.h>
 #include <hagame/common/scenes/loading.h>
+#include <hagame/utils/profiler.h>
 
 #include "scenes/mainMenu.h"
 
@@ -14,9 +15,12 @@
 #include "imgui_demo.cpp"
 #include "backends/imgui_impl_glfw.h"
 #include "backends/imgui_impl_opengl3.h"
+#include "common/gameState.h"
+
 #endif
 
 using namespace hg::graphics;
+using namespace hg::utils;
 using namespace hg::input::devices;
 
 void Game::onInit() {
@@ -103,21 +107,51 @@ void Game::onInit() {
 }
 
 void Game::onBeforeUpdate() {
+
+    Profiler::Start(GAME_NAME);
+
+    auto state = GameState::Get();
+
 #if !HEADLESS
+    m_window->setVSync(state->persistentSettings.vsync);
     m_window->clear();
 #endif
 
 #if USE_IMGUI
-    ImGui_ImplOpenGL3_NewFrame();
-    ImGui_ImplGlfw_NewFrame();
-    ImGui::NewFrame();
+
+    if (state->persistentSettings.debugLevel > 0) {
+        ImGui_ImplOpenGL3_NewFrame();
+        ImGui_ImplGlfw_NewFrame();
+        ImGui::NewFrame();
+    }
 #endif
 }
 
 void Game::onAfterUpdate() {
+
+    auto state = GameState::Get();
+
+    Profiler::End(GAME_NAME);
+
 #if USE_IMGUI
-    ImGui::Render();
-    ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
+
+    if (state->persistentSettings.debugLevel > 0) {
+
+        auto vec = std::vector<float>();
+        vec.reserve(m_fpsHistory.size());
+        std::move(std::begin(m_fpsHistory), std::end(m_fpsHistory), std::back_inserter(vec));
+
+        ImGui::Begin("Statistics");
+        ImGui::Text("FPS: %i", static_cast<int>(m_fpsMean));
+        ImGui::PlotLines("FPS", vec.data(), vec.size(), 0, nullptr, 0, FLT_MAX, ImVec2(0, 100));
+        for (const auto& [key, profile] : Profiler::Profiles()) {
+            ImGui::Text("%s: %ius", key.c_str(), static_cast<int>(profile.average() * 1000000));
+        }
+        ImGui::End();
+
+        ImGui::Render();
+        ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
+    }
 #endif
 
 #if !HEADLESS
@@ -136,6 +170,25 @@ void Game::onDestroy() {
 
 void Game::onUpdate(double dt) {
     // FILL ME IN!
+
+    auto state = GameState::Get();
+
+    if (state->persistentSettings.debugLevel > 0) {
+        m_fpsHistory.push_back(1.0 / dt);
+        m_fpsSum += 1.0 / dt;
+
+        if (m_fpsHistory.size() >= FPS_HISTORY_SIZE) {
+            m_fpsSum -= m_fpsHistory.front();
+            m_fpsHistory.pop_front();
+        }
+
+        m_fpsMean = m_fpsSum / m_fpsHistory.size();
+
+        if (1.0 / dt > m_maxFps) {
+            m_maxFps = 1.0 / dt;
+        }
+    }
+
 #if !HEADLESS
 #if USE_CONSOLE
     if (m_console) {
@@ -143,11 +196,5 @@ void Game::onUpdate(double dt) {
         m_console->update(dt);
     }
 #endif
-#endif
-
-#if USE_IMGUI
-    ImGui::Begin("Demo Window");
-    ImGui::Text(("DT: " + std::to_string(dt)).c_str());
-    ImGui::End();
 #endif
 }

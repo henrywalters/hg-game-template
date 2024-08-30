@@ -14,11 +14,6 @@
 #include "../common/enums/actions.h"
 #include "../common/persistentSettings.h"
 
-ENUM(DebugLevel)
-ENUM_VALUE(DebugLevel, Disabled)
-ENUM_VALUE(DebugLevel, Light)
-ENUM_VALUE(DebugLevel, Heavy)
-
 enum class EventType {
     MoveTo,
     MoveBack,

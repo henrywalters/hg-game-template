@@ -1,0 +1,15 @@
+//
+// Created by henry on 8/28/24.
+//
+
+#ifndef HGAMETEMPLATE_DEBUGLEVEL_H
+#define HGAMETEMPLATE_DEBUGLEVEL_H
+
+#include <hagame/utils/enum.h>
+
+ENUM(DEBUG_LEVEL)
+ENUM_VALUE(DEBUG_LEVEL, Disabled)
+ENUM_VALUE(DEBUG_LEVEL, Light)
+ENUM_VALUE(DEBUG_LEVEL, Heavy)
+
+#endif //HGAMETEMPLATE_DEBUGLEVEL_H

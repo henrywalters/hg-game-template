@@ -5,6 +5,7 @@
 #include <hagame/ui/elements/divider.h>
 #include <hagame/ui/elements/label.h>
 #include <hagame/core/assets.h>
+
 #include "mainMenu.h"
 #include "../common/ui.h"
 #include "../common/actionMap.h"
@@ -52,7 +53,7 @@ void MainMenu::onInit() {
 
     {
         auto gridEl = m_menu.addElementTo<ui::GridElement>(menu, menu->config(), Vec2i(0, 0));
-        m_menu.addElementTo<ui::Label>(gridEl, Vec2::Zero(), getFont("8bit_lg"), "HaBan");
+        m_menu.addElementTo<ui::Label>(gridEl, Vec2::Zero(), getFont("8bit_lg"), GAME_NAME);
     }
 
     {

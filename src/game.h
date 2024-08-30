@@ -12,6 +12,8 @@
 #include <hagame/common/console.h>
 #endif
 
+constexpr int FPS_HISTORY_SIZE = 100;
+
 class Game : public hg::Game {
 public:
 
@@ -37,6 +39,11 @@ protected:
     void onDestroy() override;
 
 private:
+
+    double m_fpsSum;
+    double m_fpsMean;
+    float m_maxFps = std::numeric_limits<float>::min();
+    std::deque<float> m_fpsHistory;
 
 #if !HEADLESS
     hg::graphics::Window* m_window;

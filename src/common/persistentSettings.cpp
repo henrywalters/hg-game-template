@@ -7,7 +7,11 @@
 
 using namespace hg::utils;
 
-PersistentSettings::PersistentSettings() {
+PersistentSettings::PersistentSettings():
+    devMode(false),
+    vsync(false),
+    debugLevel(1)
+{
     if (f_exists(SETTINGS_FILE)) {
         load();
     } else {
@@ -29,6 +33,7 @@ void PersistentSettings::save() {
 
     settings.set("General", "devMode", devMode.value());
     settings.set("General", "vsync", vsync.value());
+    settings.set("General", "debugLevel", debugLevel.value());
 
     f_write(SETTINGS_FILE, settings.toString());
 }
@@ -38,5 +43,6 @@ void PersistentSettings::load() {
 
     devMode = settings.get<bool>("General", "devMode");
     vsync = settings.get<bool>("General", "vsync");
+    debugLevel = settings.get<hg::utils::enum_t>("General", "debugLevel");
 }
 

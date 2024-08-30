@@ -6,6 +6,7 @@
 #define HABAN_PERSISTENTSETTINGS_H
 
 #include <hagame/utils/watcher.h>
+#include <hagame/utils/enum.h>
 
 const std::string SETTINGS_FILE = "settings.hg";
 
@@ -16,6 +17,7 @@ public:
 
     hg::utils::Watcher<bool> devMode;
     hg::utils::Watcher<bool> vsync;
+    hg::utils::Watcher<hg::utils::enum_t> debugLevel;
 
 
 private:

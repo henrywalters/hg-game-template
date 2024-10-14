@@ -22,6 +22,10 @@ protected:
     hg::graphics::Window* m_window;
     hg::ui::Frame m_menu;
 
+private:
+
+    void resize();
+
 };
 
 #endif //HGAMETEMPLATE_MAINMENU_H

@@ -43,6 +43,7 @@ find_library(BOX2D_LIBRARY
 
 include_directories("${FIND_HAGAME2_PATHS}/thirdparty/entt/src/")
 include_directories("${FIND_HAGAME2_PATHS}/thirdparty/box2d/include/")
+include_directories("${FIND_HAGAME2_PATHS}/thirdparty/glad/include/")
 
 set(CMAKE_FIND_ROOT_PATH_MODE_LIBRARY ONLY)
 set(CMAKE_FIND_ROOT_PATH_MODE_LIBRARY ONLY)

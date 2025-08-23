@@ -1,5 +1,5 @@
 MESSAGE("FINDING HAGAME2 LIB")
-# set(CMAKE_FIND_DEBUG_MODE TRUE)
+set(CMAKE_FIND_DEBUG_MODE TRUE)
 set(CMAKE_FIND_ROOT_PATH_MODE_LIBRARY NEVER)
 set(CMAKE_FIND_ROOT_PATH_MODE_LIBRARY NEVER)
 set(CMAKE_FIND_ROOT_PATH_MODE_INCLUDE NEVER)
@@ -10,11 +10,23 @@ set(
         /home/henry/development/games/HaGameLite
 )
 
+set(
+        FIND_HGE_PATHS
+        /home/henry/development/games/hg-editor
+)
+
 find_path(
         HAGAME2_INCLUDE_DIR hagame.h
         PATH_SUFFIXES include
         PATHS ${FIND_HAGAME2_PATHS}
 )
+
+find_path(
+        HGE_INCLUDE_DIR hge.h
+        PATH_SUFFIXES include
+        PATHS ${FIND_HGE_PATHS}
+)
+
 if(EMSCRIPTEN)
     MESSAGE("EMSCRIPTEN")
     find_library(HAGAME2_LIBRARY
@@ -22,6 +34,10 @@ if(EMSCRIPTEN)
             PATH_SUFFIXES wasm
             PATHS ${FIND_HAGAME2_PATHS}
             )
+    find_library(HGE_LIBRARY
+            NAMES hge
+            PATH_SUFFIXES wasm
+            PATHS ${FIND_HGE_PATHS})
 else()
     MESSAGE("UNIX")
     find_library(HAGAME2_LIBRARY
@@ -29,6 +45,10 @@ else()
             PATH_SUFFIXES lib
             PATHS ${FIND_HAGAME2_PATHS}
             )
+    find_library(HGE_LIBRARY
+            NAMES hge
+            PATH_SUFFIXES lib
+            PATHS ${FIND_HGE_PATHS})
 endif()
 
 MESSAGE("${FIND_HAGAME2_PATHS}/thirdparty/box2d/build/bin/")
@@ -52,4 +72,6 @@ set(CMAKE_FIND_ROOT_PATH_MODE_INCLUDE ONLY)
 MESSAGE("FIND_HAGAME2_PATHS = ${FIND_HAGAME2_PATHS}")
 MESSAGE("HAGAME2_INCLUDE_DIR = ${HAGAME2_INCLUDE_DIR}")
 MESSAGE("HAGAME2_LIBRARY = ${HAGAME2_LIBRARY}")
+MESSAGE("HGE_INCLUDE_DIR = ${HGE_INCLUDE_DIR}")
+MESSAGE("HGE_LIBRARY = ${HGE_LIBRARY}")
 MESSAGE("BOX2D_LIBRARY = ${BOX2D_LIBRARY}")

@@ -36,14 +36,17 @@ void MainMenu::onInit() {
     };
 
     std::vector<MenuItem> menuItems {
-
+            {"Editor",
+             [&]() {
+                 game()->scenes()->activate("editor");
+             }}
     };
 
 #ifndef __EMSCRIPTEN__
     menuItems.push_back({
         "Quit to Desktop",
         [&]() {
-            game()->running(false);
+            game()->requestShutdown();
         }
     });
 #endif

@@ -24,7 +24,14 @@ find_package(OpenGL REQUIRED)
 pkg_search_module(GLFW REQUIRED glfw3)
 # pkg_search_module(GL REQUIRED gl)
 
-set(IMGUI_PATH ${CMAKE_CURRENT_LIST_DIR}/thirdparty/imgui)
+set(CMAKE_CXX_STANDARD 20)
+list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_LIST_DIR}/cmake")
+MESSAGE("${CMAKE_CURRENT_LIST_DIR}")
+find_package(HaGame2 REQUIRED)
+
+set(IMGUI_PATH ${FIND_HGE_PATHS}/thirdparty/imgui)
+set(IMGUIZMO_PATH ${FIND_HGE_PATHS}/thirdparty/ImGuizmo)
+
 file(GLOB IMGUI_GLOB
         ${IMGUI_PATH}/imgui.h
         ${IMGUI_PATH}/imgui.cpp
@@ -37,6 +44,8 @@ file(GLOB IMGUI_GLOB
         ${IMGUI_PATH}/imstb_truetype.h
         ${IMGUI_PATH}/imgui_tables.cpp
         ${IMGUI_PATH}/imgui_widgets.cpp
+        ${IMGUI_PATH}/misc/cpp/imgui_stdlib.h
+        ${IMGUI_PATH}/misc/cpp/imgui_stdlib.cpp
 
         # specific bindings...
         ${IMGUI_PATH}/backends/imgui_impl_glfw.h
@@ -49,21 +58,31 @@ add_library("imgui" STATIC ${IMGUI_GLOB})
 target_include_directories("imgui" PUBLIC ${IMGUI_PATH})
 target_link_libraries("imgui" PRIVATE glfw)
 
+set(IMGUIZMO_SRC ${IMGUIZMO_PATH}/ImGuizmo.cpp )
+
+# Add ImGuizmo to your project
+add_library(imguizmo STATIC ${IMGUIZMO_SRC})
+target_include_directories(imguizmo PUBLIC
+        ${IMGUIZMO_PATH}
+        ${IMGUI_PATH} # ImGuizmo depends on ImGui headers
+        )
+target_link_libraries(imguizmo PUBLIC imgui)
+
 include_directories(${X11_INCLUDE_DIR})
 
-set(CMAKE_CXX_STANDARD 20)
-list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_LIST_DIR}/cmake")
-MESSAGE("${CMAKE_CURRENT_LIST_DIR}")
-find_package(HaGame2 REQUIRED)
 
-add_executable(HGameTemplate main.cpp src/constants.h src/game.h src/game.cpp src/scenes/mainMenu.h src/scenes/mainMenu.cpp src/common/actionMap.h src/common/gameState.cpp src/common/persistentSettings.cpp src/common/ui.cpp src/common/enums/debugLevel.h)
+
+add_executable(HGameTemplate main.cpp src/constants.h src/game.h src/game.cpp src/scenes/mainMenu.h src/scenes/mainMenu.cpp src/common/actionMap.h src/common/gameState.cpp src/common/persistentSettings.cpp src/common/ui.cpp src/common/enums/debugLevel.h src/scenes/editor.h src/scenes/editor.cpp src/systems/renderer.cpp)
 target_include_directories(HGameTemplate PUBLIC ${HAGAME2_INCLUDE_DIR})
+target_include_directories(HGameTemplate PUBLIC ${HGE_INCLUDE_DIR})
 target_include_directories(HGameTemplate PUBLIC ${FIND_HAGAME2_PATHS}/thirdparty/asio/asio/include/)
 target_link_libraries(HGameTemplate ${HAGAME2_LIBRARY})
+target_link_libraries(HGameTemplate ${HGE_LIBRARY})
 target_link_libraries(HGameTemplate ${GLFW_LIBRARIES})
 target_link_libraries(HGameTemplate ${OPENGL_LIBRARIES})
 target_include_directories(HGameTemplate PUBLIC ${IMGUI_PATH})
 target_link_libraries(HGameTemplate imgui)
+target_link_libraries(HGameTemplate imguizmo)
 target_link_libraries(HGameTemplate ${X11_LIBRARIES})
 target_link_libraries(HGameTemplate ${ALSA_LIBRARIES})
 

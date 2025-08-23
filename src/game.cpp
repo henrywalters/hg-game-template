@@ -16,6 +16,7 @@
 #include "backends/imgui_impl_glfw.h"
 #include "backends/imgui_impl_opengl3.h"
 #include "common/gameState.h"
+#include "scenes/editor.h"
 
 #endif
 
@@ -24,11 +25,12 @@ using namespace hg::utils;
 using namespace hg::input::devices;
 
 void Game::onInit() {
+
 #if !HEADLESS
     m_window = Windows::Create(GAME_NAME, GAME_SIZE);
 
     Windows::Events.subscribe(WindowEvents::Close, [&](Window* window) {
-        running(false);
+        requestShutdown();
     });
 
     Windows::Events.subscribe(WindowEvents::Resize, [&](Window* window) {
@@ -46,6 +48,8 @@ void Game::onInit() {
     settings.version = GAME_VERSION;
 
     auto loading = static_cast<hg::Loading*>(scenes()->add<hg::Loading>("loading", m_window, settings));
+
+    scenes()->add<Editor>("editor", m_window);
 
     loading->onFinish = [&]() {
 
@@ -142,6 +146,7 @@ void Game::onAfterUpdate() {
         std::move(std::begin(m_fpsHistory), std::end(m_fpsHistory), std::back_inserter(vec));
 
         ImGui::Begin("Statistics");
+        ImGui::Text("DT: %f", dt());
         ImGui::Text("FPS: %i", static_cast<int>(m_fpsMean));
         ImGui::PlotLines("FPS", vec.data(), vec.size(), 0, nullptr, 0, FLT_MAX, ImVec2(0, 100));
         for (const auto& [key, profile] : Profiler::Profiles()) {

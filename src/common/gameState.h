@@ -30,6 +30,13 @@ public:
         bool editing = false;
     } settings;
 
+    double elapsedTime = 0.0;
+    bool running = true;
+    bool hasCamera;
+
+    hg::Vec2 rawMousePos;
+    hg::Vec2 mousePos;
+
     PersistentSettings persistentSettings;
 
     hg::Publisher<EventType, Event> events;

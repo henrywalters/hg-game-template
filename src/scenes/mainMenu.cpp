@@ -27,8 +27,10 @@ void MainMenu::onInit() {
         resize();
     });
 
-    m_menu.root()->style.margin = hg::ui::offset(1. / 3, 1. / 6, 1. / 3, 1. / 6, ui::Unit::Percent);
-    m_menu.root()->style.padding = hg::ui::offset(25);
+    m_menu.root()->style.marginInPixels = false;
+    m_menu.root()->style.paddingInPixels = true;
+    m_menu.root()->style.margin = Vec4({1. /3, 1. / 6, 1. / 3, 1. / 6});
+    m_menu.root()->style.padding = Vec4({25, 25, 25, 25});
     m_menu.root()->style.backgroundColor = MENU_BG;
     struct MenuItem {
         std::string label;
@@ -72,7 +74,7 @@ void MainMenu::onInit() {
 
     for (int i = 0; i < menuItems.size(); i++) {
         auto gridEl = m_menu.addElementTo<ui::GridElement>(menu, menu->config(), hg::Vec2i(0, i + 2));
-        gridEl->style.margin = ui::offset(5);
+        gridEl->style.margin = Vec4({5, 5, 5, 5});
         addButton(&m_menu, gridEl, menuItems[i].label, menuItems[i].onSelect);
     }
 

@@ -25,6 +25,7 @@
 #include <hagame/graphics/tilemap.h>
 #include <hagame/graphics/textBuffer.h>
 #include <hagame/graphics/batchRenderer.h>
+#include <hagame/ui/graphicsContext.h>
 
 #include "../common/enums/renderModes.h"
 #include "../common/gameState.h"
@@ -64,6 +65,9 @@ private:
     hg::Vec2 m_mousePos;
 
     hg::graphics::BatchRenderer m_batchRenderer;
+
+    hg::ui::GraphicsContext m_uiContext;
+    hg::graphics::TextBuffer m_textBuffer;
 
     hg::graphics::primitives::Quad m_animQuad;
     hg::graphics::MeshInstance m_anim;

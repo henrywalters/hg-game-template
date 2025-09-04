@@ -3,7 +3,7 @@
 //
 #include "editor.h"
 #include "../systems/renderer.h"
-
+#include <hagame/ui/components.h>
 //
 // Created by henry on 8/16/24.
 //

@@ -11,6 +11,8 @@
 #include <hagame/physics/physics2D.h>
 #include <hagame/physics/rigidbody2D.h>
 #include <hagame/core/game.h>
+#include <hagame/ui/components.h>
+#include <hagame/ui/math.h>
 
 #include "../constants.h"
 #include "../common/enums/debugLevel.h"
@@ -21,6 +23,7 @@ using namespace hg::graphics;
 using namespace hg::utils;
 using namespace hg::math::collisions;
 using namespace hg::math::components;
+using namespace hg::ui;
 
 HG_SYSTEM(Graphics, Renderer)
 
@@ -29,7 +32,8 @@ Renderer::Renderer(hg::graphics::Window *window):
         m_displayQuad((GAME_SIZE.cast<float>()), Vec2(0, 0), true),
         m_display(&m_displayQuad),
         m_animQuad(Vec2(1, 1)),
-        m_anim(&m_animQuad)
+        m_anim(&m_animQuad),
+        m_textBuffer(getFont("8bit"), "", Vec3::Zero(), TextHAlignment::Center, TextVAlignment::Center)
 {
     m_displayQuad.centered(false);
     m_display.update(&m_displayQuad);
@@ -135,17 +139,23 @@ void Renderer::onRender(double dt) {
     Profiler::Start("Renderer::debugPass");
     debugPass(dt);
     Profiler::End("Renderer::debugPass");
+    Profiler::Start("Renderer::uiPass");
+    uiPass(dt);
+    Profiler::End("Renderer::uiPass");
+    Profiler::Start("Renderer::combinedPass");
+    combinedPass(dt);
+    Profiler::End("Renderer::combinedPass");
+
     Profiler::End("Renderer::onRender");
 
-    uiPass(dt);
-    combinedPass(dt);
+    m_renderPasses.unbind(RenderMode::Combined);
 }
 
 void Renderer::onUpdate(double dt) {
 
     auto state = GameState::Get();
 
-    scene->entities.forEach<components::SpriteSheetAnimator>([&](auto animator, auto entity) {
+    scene->entities.forEach<graphics::components::SpriteSheetAnimator>([&](auto animator, auto entity) {
         animator->update(dt);
     });
 }
@@ -181,6 +191,7 @@ void Renderer::prepareGeometry() {
                 shader->setMat4("projection", projection);
                 shader->setMat4("view", view);
                 shader->setMat4("model", entity->model());
+                m_anim.render();
             }});
         }
     });
@@ -204,7 +215,7 @@ void Renderer::prepareGeometry() {
 
     m_batchRenderer.sprites.render();
 
-    scene->entities.forEach<components::SpriteSheetAnimator>([&](auto animator, auto entity) {
+    scene->entities.forEach<graphics::components::SpriteSheetAnimator>([&](auto animator, auto entity) {
         auto animation = (SpriteSheet*) animator->player->get();
         if (animation) {
             animation->texture()->bind();
@@ -226,7 +237,7 @@ void Renderer::colorPass(double dt) {
 
     // glEnable(GL_DEPTH_TEST);
 
-    auto shader = getShader("geometry");
+    auto shader = getShader("texture");
     shader->use();
 
     shader->setMat4("projection", projection);
@@ -350,6 +361,76 @@ void Renderer::debugPass(double dt) {
 void Renderer::uiPass(double dt) {
     m_renderPasses.bind(RenderMode::UI);
     glViewport(0, 0, GAME_SIZE[0], GAME_SIZE[1]);
+
+    Mat4 uiProj = Mat4::Orthographic(0, GAME_SIZE[0], 0, GAME_SIZE[1], -100, 100);
+    Mat4 uiView = Mat4::Identity();
+
+    Rect rootRect(Vec2(0, 0), Vec2(GAME_SIZE[0], GAME_SIZE[1]));
+
+    struct UIRenderable {
+        int depth;
+        std::function<void()> fn;
+    };
+
+    std::vector<UIRenderable> uiRenders;
+
+    scene->entities.forEach<ui::components::Container>([&](ui::components::Container* container, Entity* entity) {
+        uiRenders.push_back(UIRenderable{entity->getDepth(), [&, container, entity](){
+            auto element = entity->getComponent<ui::components::Element>();
+            if (!element) {
+                std::cout << "WARNING: Container requires Element component\n";
+                return;
+            }
+            m_uiContext.colorShader.use();
+            m_uiContext.colorShader.setMat4("projection", uiProj);
+            m_uiContext.colorShader.setMat4("view", uiView);
+            m_uiContext.colorShader.setMat4("model", entity->model());
+            m_uiContext.colorShader.setVec4("color", element->backgroundColor);
+            auto rect = element->getRect(rootRect);
+            m_animQuad.centered(false);
+            m_animQuad.setSizeAndOffset(rect.size, rect.pos);
+            m_anim.update(&m_animQuad);
+            m_anim.render();
+        }});
+    });
+
+    scene->entities.forEach<ui::components::Label>([&](ui::components::Label* label, Entity* entity) {
+        uiRenders.push_back(UIRenderable{entity->getDepth(), [&, label, entity]() {
+            auto element = entity->getComponent<ui::components::Element>();
+            if (!element) {
+                std::cout << "WARNING: Container requires Element component\n";
+                return;
+            }
+
+
+
+            if (!hasFont(label->font)) {
+                std::cout << "FONT: " << label->font << " does not exist\n";
+                return;
+            }
+
+            auto font = getFont(label->font);
+
+            m_uiContext.textBufferShader.use();
+            m_uiContext.textBufferShader.setMat4("projection", uiProj);
+            m_uiContext.textBufferShader.setMat4("view", uiView);
+            m_uiContext.textBufferShader.setMat4("model", entity->model());
+            m_uiContext.textBufferShader.setVec4("textColor", element->foregroundColor);
+            auto rect = element->getRect(rootRect);
+            m_textBuffer.limitSize(rect.size.resize<3>());
+            m_textBuffer.pos(rect.pos.resize<3>());
+            m_textBuffer.text(label->text);
+
+            m_textBuffer.font(font);
+            m_textBuffer.render();
+        }});
+    });
+
+    std::sort(uiRenders.begin(), uiRenders.end(), [](auto& a, auto& b) {return a.depth < b.depth;});
+
+    for (auto&& render : uiRenders) {
+        render.fn();
+    }
 
     m_renderPasses.render(RenderMode::UI, 1);
 }

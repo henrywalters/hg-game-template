@@ -58,7 +58,7 @@ add_library("imgui" STATIC ${IMGUI_GLOB})
 target_include_directories("imgui" PUBLIC ${IMGUI_PATH})
 target_link_libraries("imgui" PRIVATE glfw)
 
-set(IMGUIZMO_SRC ${IMGUIZMO_PATH}/ImGuizmo.cpp )
+set(IMGUIZMO_SRC ${IMGUIZMO_PATH}/ImGuizmo.cpp)
 
 # Add ImGuizmo to your project
 add_library(imguizmo STATIC ${IMGUIZMO_SRC})
@@ -70,9 +70,10 @@ target_link_libraries(imguizmo PUBLIC imgui)
 
 include_directories(${X11_INCLUDE_DIR})
 
+add_library(Scripts scripts/pong.cpp)
+target_include_directories(Scripts PUBLIC ${HAGAME2_INCLUDE_DIR})
 
-
-add_executable(HGameTemplate main.cpp src/constants.h src/game.h src/game.cpp src/scenes/mainMenu.h src/scenes/mainMenu.cpp src/common/actionMap.h src/common/gameState.cpp src/common/persistentSettings.cpp src/common/ui.cpp src/common/enums/debugLevel.h src/scenes/editor.h src/scenes/editor.cpp src/systems/renderer.cpp)
+add_executable(HGameTemplate main.cpp src/constants.h src/game.h src/game.cpp src/scenes/mainMenu.h src/scenes/mainMenu.cpp src/common/actionMap.h src/common/gameState.cpp src/common/persistentSettings.cpp src/common/ui.cpp src/common/enums/debugLevel.h src/scenes/editor.h src/scenes/editor.cpp src/systems/renderer.cpp  src/commands/settings.h src/commands/settings.cpp)
 target_include_directories(HGameTemplate PUBLIC ${HAGAME2_INCLUDE_DIR})
 target_include_directories(HGameTemplate PUBLIC ${HGE_INCLUDE_DIR})
 target_include_directories(HGameTemplate PUBLIC ${FIND_HAGAME2_PATHS}/thirdparty/asio/asio/include/)

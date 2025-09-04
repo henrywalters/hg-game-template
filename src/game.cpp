@@ -9,14 +9,15 @@
 #include <hagame/utils/profiler.h>
 
 #include "scenes/mainMenu.h"
+#include "common/gameState.h"
+#include "scenes/editor.h"
+#include "commands/settings.h"
 
 #if USE_IMGUI
 #include "imgui.h"
 #include "imgui_demo.cpp"
 #include "backends/imgui_impl_glfw.h"
 #include "backends/imgui_impl_opengl3.h"
-#include "common/gameState.h"
-#include "scenes/editor.h"
 
 #endif
 
@@ -56,6 +57,11 @@ void Game::onInit() {
 #if USE_CONSOLE
 
         m_console = std::make_unique<hg::Console>(hg::getFont("8bit"), m_window->size(), hg::Vec2i(m_window->size()[0], 26 * 10));
+
+        m_console->registerCommand(std::make_tuple("set_vsync", SetVSyncCommand{}));
+        m_console->registerCommand(std::make_tuple("help", HelpCommand{}));
+
+        m_console->putLine("Run 'help' for list of commands");
 
         m_window->input.devices.keyboardMouse()->events.subscribe(KeyboardEvent::KeyPressed, [&](auto keyPress) {
             if (keyPress.key == '`') {
@@ -150,7 +156,7 @@ void Game::onAfterUpdate() {
         ImGui::Text("FPS: %i", static_cast<int>(m_fpsMean));
         ImGui::PlotLines("FPS", vec.data(), vec.size(), 0, nullptr, 0, FLT_MAX, ImVec2(0, 100));
         for (const auto& [key, profile] : Profiler::Profiles()) {
-            ImGui::Text("%s: %ius", key.c_str(), static_cast<int>(profile.average() * 1000000));
+            ImGui::Text("%s: %ld microseconds", key.c_str(), static_cast<int>(profile.averageInSeconds() * 1000000));
         }
         ImGui::End();
 
@@ -160,11 +166,13 @@ void Game::onAfterUpdate() {
 #endif
 
 #if !HEADLESS
-#if USE_CONSOLE
-    if (m_console) {
-        m_console->render();
-    }
-#endif
+
+    #if USE_CONSOLE
+        if (m_console) {
+            m_console->render();
+        }
+    #endif
+
     m_window->render();
 #endif
 }
